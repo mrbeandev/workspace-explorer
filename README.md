@@ -15,6 +15,10 @@ Built for AI agents that need to give their owners temporary, secure access to i
 - **Terminal-First** — Designed for headless/CLI environments (perfect for AI agents)
 - **Full VS Code Experience** — Extensions, themes, and all IDE features
 
+## 📸 Preview
+
+![Workspace Explorer Sample UI](assets/sample-ui.png)
+
 ## 🚀 Quick Start
 
 ```bash
