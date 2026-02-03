@@ -85,6 +85,8 @@ Examples:
 
     # Start code-server
     cs_bin = get_binary_path("code-server")
+    env = os.environ.copy()
+    env["PASSWORD"] = password
     # Create data and logs directory
     data_dir = os.path.join(BASE_DIR, "data")
     user_data_dir = os.path.join(data_dir, "user-data")
