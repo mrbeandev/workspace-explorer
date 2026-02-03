@@ -85,30 +85,75 @@ Examples:
 
     # Start code-server
     cs_bin = get_binary_path("code-server")
-    env = os.environ.copy()
-    env["PASSWORD"] = password
+    # Create data and logs directory
+    data_dir = os.path.join(BASE_DIR, "data")
+    user_data_dir = os.path.join(data_dir, "user-data")
+    settings_dir = os.path.join(user_data_dir, "User")
+    os.makedirs(settings_dir, exist_ok=True)
     
+    # Create settings.json to disable git and other features
+    settings_path = os.path.join(settings_dir, "settings.json")
+    settings_content = {
+        "git.enabled": False,
+        "github.enabled": False,
+        "git.autorefresh": False,
+        "git.autofetch": False,
+        "workbench.startupEditor": "none",
+        "telemetry.enableTelemetry": False,
+        "workbench.enableExperiments": False,
+        "update.mode": "none"
+    }
+    import json
+    with open(settings_path, "w") as f:
+        json.dump(settings_content, f, indent=4)
+
+    log_dir = os.path.join(BASE_DIR, "logs")
+    os.makedirs(log_dir, exist_ok=True)
+    cs_log_path = os.path.join(log_dir, "code-server.log")
+    cf_log_path = os.path.join(log_dir, "cloudflared.log")
+
     print("🖥️  Starting code-server...")
+    cs_log_file = open(cs_log_path, "w")
     code_server_proc = subprocess.Popen(
         [
             cs_bin,
             "--bind-addr", f"127.0.0.1:{args.port}",
             "--auth", "password",
             "--disable-telemetry",
+            "--user-data-dir", user_data_dir,
             workspace
         ],
         env=env,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL
+        stdout=cs_log_file,
+        stderr=subprocess.STDOUT
     )
 
-    # Give code-server time to start
-    time.sleep(2)
+    # ... rest of the wait_for_port logic ...
+    def wait_for_port(port, timeout=15):
+        import socket
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            try:
+                with socket.create_connection(("127.0.0.1", port), timeout=1):
+                    return True
+            except (socket.timeout, ConnectionRefusedError):
+                if code_server_proc.poll() is not None:
+                    return False
+                time.sleep(0.5)
+        return False
+
+    print(f"⏳ Waiting for code-server to bind to port {args.port}...")
+    if not wait_for_port(args.port):
+        print("❌ Error: code-server failed to start or bind to port in time.")
+        print(f"📄 Check logs at: {cs_log_path}")
+        code_server_proc.terminate()
+        sys.exit(1)
     
     # Start cloudflared tunnel
     cf_bin = get_binary_path("cloudflared")
     print("🌐 Starting Cloudflare tunnel...")
     
+    cf_log_file = open(cf_log_path, "w")
     tunnel_proc = subprocess.Popen(
         [cf_bin, "tunnel", "--url", f"http://127.0.0.1:{args.port}"],
         stdout=subprocess.PIPE,
@@ -131,6 +176,8 @@ Examples:
         except:
             tunnel_proc.kill()
             code_server_proc.kill()
+        cs_log_file.close()
+        cf_log_file.close()
         print("👋 Session terminated.")
         sys.exit(0)
 
@@ -140,6 +187,9 @@ Examples:
     # Read tunnel output to find URL
     try:
         for line in iter(tunnel_proc.stdout.readline, ""):
+            cf_log_file.write(line)
+            cf_log_file.flush()
+            
             if tunnel_proc.poll() is not None:
                 print("❌ Tunnel process exited unexpectedly.")
                 cleanup()
@@ -161,20 +211,23 @@ Examples:
         print(f"🔑 Password: {password}")
         print("="*60)
         print("\n💡 Share the URL and password with your owner.")
+        print("⏳ Note: Please wait 15-30 seconds for the URL to become active.")
+        print(f"📄 Logs:     {log_dir}")
         print("   Press Ctrl+C to terminate the session.\n")
         
-        # Keep running and forward any tunnel output
+        # Keep logging in background
         try:
             while True:
                 line = tunnel_proc.stdout.readline()
                 if not line:
                     break
-                # Optionally print tunnel logs (commented out to reduce noise)
-                # print(f"[tunnel] {line.strip()}")
+                cf_log_file.write(line)
+                cf_log_file.flush()
         except KeyboardInterrupt:
             cleanup()
     else:
         print("❌ Failed to establish tunnel.")
+        print(f"📄 Check logs at: {cf_log_path}")
         cleanup()
 
 if __name__ == "__main__":
