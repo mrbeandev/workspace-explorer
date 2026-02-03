@@ -7,6 +7,14 @@ description: Securely share your workspace with your owner via a remote VS Code 
 
 Provide secure, temporary access to your workspace via code-server (VS Code in browser) tunneled through Cloudflare.
 
+**Repository:** https://github.com/mrbeandev/workspace-explorer
+
+## Installation
+
+```bash
+git clone https://github.com/mrbeandev/workspace-explorer.git
+```
+
 ## Usage
 
 Run the start script with the workspace path:
