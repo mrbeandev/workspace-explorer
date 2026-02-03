@@ -29,7 +29,7 @@ The script will:
 1. Download binaries on first run (code-server + cloudflared)
 2. Start code-server on localhost
 3. Create a Cloudflare tunnel
-4. Print the **public URL** and **password** directly to terminal
+4. Print the **public URL** and **password** directly to terminal (Note: Wait 15-30s for the URL to become active)
 
 Example output:
 ```

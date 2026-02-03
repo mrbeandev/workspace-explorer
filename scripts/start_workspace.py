@@ -130,7 +130,6 @@ Examples:
         stderr=subprocess.STDOUT
     )
 
-    # ... rest of the wait_for_port logic ...
     def wait_for_port(port, timeout=15):
         import socket
         start_time = time.time()
