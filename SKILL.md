@@ -54,6 +54,11 @@ python3 {baseDir}/scripts/start_workspace.py /path/to/workspace --port 9000
 |--------|---------|-------------|
 | `workspace` | (required) | Path to directory to serve |
 | `--port` | 8080 | Local port for code-server |
+| `--status` | (flag) | Check if workspace is running |
+
+## Heartbeat Support
+
+This project includes a `HEARTBEAT.md` file. When installed as an OpenClaw skill, the agent will periodically check if the tunnel is active and remind you if it's left running for too long.
 
 ## Termination
 

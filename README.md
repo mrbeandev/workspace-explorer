@@ -14,6 +14,7 @@ Built for AI agents that need to give their owners temporary, secure access to i
 - **No Port Forwarding** — Cloudflare tunnel handles all networking
 - **Terminal-First** — Designed for headless/CLI environments (perfect for AI agents)
 - **Full VS Code Experience** — Extensions, themes, and all IDE features
+- **Heartbeat Support** — Automatically monitors tunnel health and idle time via OpenClaw
 
 ## 📸 Preview
 

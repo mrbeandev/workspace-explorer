@@ -61,9 +61,59 @@ Examples:
   %(prog)s .  # Current directory
         """
     )
-    parser.add_argument("workspace", help="Path to the workspace directory to serve")
+    parser.add_argument("workspace", nargs="?", help="Path to the workspace directory to serve")
     parser.add_argument("--port", type=int, default=8080, help="Local port for code-server (default: 8080)")
+    parser.add_argument("--status", action="store_true", help="Check the current status of the workspace")
     args = parser.parse_args()
+
+    # Handle status check
+    if args.status:
+        # Check for running processes
+        try:
+            # Check for code-server
+            cs_running = False
+            try:
+                # Find processes matching the binary path or name
+                output = subprocess.check_output(["ps", "aux"], text=True)
+                if "code-server" in output and f":{args.port}" in output:
+                    cs_running = True
+            except:
+                pass
+
+            # Check for cloudflared
+            cf_running = False
+            try:
+                if "cloudflared" in output and "tunnel" in output:
+                    cf_running = True
+            except:
+                pass
+
+            if cs_running or cf_running:
+                print("🔵 Workspace Explorer Status:")
+                print(f"   - code-server: {'✅ RUNNING' if cs_running else '❌ NOT RUNNING'}")
+                print(f"   - cloudflared: {'✅ RUNNING' if cf_running else '❌ NOT RUNNING'}")
+                
+                # Try to find the URL from logs if it's running
+                log_dir = os.path.join(BASE_DIR, "logs")
+                cf_log_path = os.path.join(log_dir, "cloudflared.log")
+                if os.path.exists(cf_log_path):
+                    with open(cf_log_path, "r") as f:
+                        content = f.read()
+                        url_match = re.search(r'https://[a-zA-Z0-9-]+\.trycloudflare\.com', content)
+                        if url_match:
+                            print(f"   - Active URL:  {url_match.group(0)}")
+                
+                print("\n💡 Tip: Use Ctrl+C on the original process to stop, or 'pkill' them if ghosting.")
+            else:
+                print("⚪ Workspace Explorer is currently INACTIVE.")
+        except Exception as e:
+            print(f"❌ Error checking status: {e}")
+        sys.exit(0)
+
+    if not args.workspace:
+        print("❌ Error: Workspace path is required unless using --status.")
+        parser.print_help()
+        sys.exit(1)
 
     workspace = os.path.abspath(args.workspace)
     if not os.path.isdir(workspace):
