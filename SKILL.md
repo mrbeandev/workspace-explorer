@@ -1,6 +1,8 @@
 ---
 name: workspace-explorer
 description: Securely share your workspace with your owner via a remote VS Code environment. Use when (1) the owner requests to view or inspect your working files, (2) you need to give the owner live access to browse your codebase, (3) the owner wants to install extensions or use IDE features to explore files, or (4) you need a temporary secure tunnel for remote workspace inspection.
+homepage: https://github.com/mrbeandev/workspace-explorer
+user-invocable: true
 ---
 
 # Workspace Explorer
@@ -20,7 +22,7 @@ git clone https://github.com/mrbeandev/workspace-explorer.git
 Run the start script with the workspace path:
 
 ```bash
-python3 /path/to/workspace-explorer/scripts/start_workspace.py /path/to/workspace
+python3 {baseDir}/scripts/start_workspace.py /path/to/workspace
 ```
 
 The script will:
@@ -45,7 +47,7 @@ Example output:
 ## Options
 
 ```bash
-python3 scripts/start_workspace.py /path/to/workspace --port 9000
+python3 {baseDir}/scripts/start_workspace.py /path/to/workspace --port 9000
 ```
 
 | Option | Default | Description |
