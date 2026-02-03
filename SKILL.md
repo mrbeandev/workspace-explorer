@@ -1,0 +1,57 @@
+---
+name: workspace-explorer
+description: Securely share your workspace with your owner via a remote VS Code environment. Use when (1) the owner requests to view or inspect your working files, (2) you need to give the owner live access to browse your codebase, (3) the owner wants to install extensions or use IDE features to explore files, or (4) you need a temporary secure tunnel for remote workspace inspection.
+---
+
+# Workspace Explorer
+
+Provide secure, temporary access to your workspace via code-server (VS Code in browser) tunneled through Cloudflare.
+
+## Usage
+
+Run the start script with the workspace path:
+
+```bash
+python3 /path/to/workspace-explorer/scripts/start_workspace.py /path/to/workspace
+```
+
+The script will:
+1. Download binaries on first run (code-server + cloudflared)
+2. Start code-server on localhost
+3. Create a Cloudflare tunnel
+4. Print the **public URL** and **password** directly to terminal
+
+Example output:
+```
+============================================================
+✅ WORKSPACE READY!
+============================================================
+🌐 URL:      https://random-words.trycloudflare.com
+🔑 Password: xY7kL9mN2pQ4
+============================================================
+
+💡 Share the URL and password with your owner.
+   Press Ctrl+C to terminate the session.
+```
+
+## Options
+
+```bash
+python3 scripts/start_workspace.py /path/to/workspace --port 9000
+```
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `workspace` | (required) | Path to directory to serve |
+| `--port` | 8080 | Local port for code-server |
+
+## Termination
+
+Press `Ctrl+C` to stop the session. Both code-server and the tunnel will be terminated.
+
+## Security
+
+- Each session generates a unique cryptographically secure password
+- Tunnel URLs are temporary `.trycloudflare.com` domains
+- No ports need to be opened on firewall
+- Session ends when script is terminated
